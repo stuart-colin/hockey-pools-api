@@ -1,0 +1,19 @@
+# Dependencies
+node_modules
+
+# yarn error logs
+yarn-error.log
+
+# Environment varibales
+.env*
+!.env*.example
+
+# Local data
+data
+
+# Code coverage
+coverage
+
+# Local logs
+logs
+NHLPoolsAPI.code-workspace

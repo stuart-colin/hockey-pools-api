@@ -1,0 +1,31 @@
+# fly.toml app configuration file generated for hockey-pools-api
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = "hockey-pools-api"
+primary_region = "ord"
+
+[build]
+  image = "hockey-pools-api:latest"
+
+[env]
+  PORT = "3000"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.stickiness]]
+    header = "Cookie"
+    table_name = "sessions"
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 1000
+    soft_limit = 900
+
+# Metrics are off by default
+# [metrics]
+#   port = 9090
