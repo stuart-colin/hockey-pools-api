@@ -55,6 +55,19 @@ const getScoresNow = async () => {
 //   }
 // };
 
+const getTeams = async () => {
+  try {
+    const teams = await axios.get(`https://api.nhle.com/stats/rest/en/team`,
+      { timeout: REQUEST_TIMEOUT }
+    );
+    return teams.data;
+  } catch (error) {
+    logger.error(error);
+    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get teams');
+  }
+};
+
+
 const getPlayerStats = async () => {
   try {
     const scores = await axios.get(
@@ -184,6 +197,7 @@ const queryForPlayerStats = async (playerID, year) => {
 };
 
 module.exports = {
+  getTeams,
   getStandingsNow,
   getScoresNow,
   getPlayerStats,
