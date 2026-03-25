@@ -5,9 +5,10 @@ app = "hockey-pools-api"
 primary_region = "ord"
 
 [build]
-  image = "hockey-pools-api:latest"
+  dockerfile = "Dockerfile"
 
 [env]
+  NODE_ENV = "production"
   PORT = "3000"
 
 [http_service]
