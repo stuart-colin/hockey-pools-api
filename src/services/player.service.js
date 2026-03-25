@@ -180,6 +180,9 @@ const updatePlayerById = async (playerId, updateBody) => {
  * @returns {Promise<Player>}
  */
 const updatePlayerOTL = async (playerId, otl) => {
+  console.log(playerId);
+  console.log(otl);
+
   let playerRaw = Player.findById(playerId);
   let player = await playerRaw;
   if (!player) {
@@ -188,11 +191,12 @@ const updatePlayerOTL = async (playerId, otl) => {
   if (player.position !== 'G') {
     throw new ApiError(httpStatus.NOT_ACCEPTABLE, `Player is of position ${player.position}, must be of type 'G'`);
   }
-  console.log(JSON.parse(JSON.stringify(player.stats)));
-  let playerStats = JSON.parse(JSON.stringify(player.stats));
-  playerStats.otl = otl;
-  console.log(playerStats);
-  player.stats = playerStats;
+  // if the player does not have a stats object, create one
+  if (player.stats === undefined) {
+    player.stats = {
+      otl: otl,
+    };
+  }
   await player.save();
   return player;
 };

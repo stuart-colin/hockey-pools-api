@@ -4,10 +4,7 @@ const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
-router
-  .route('/')
-  .post(auth(['roster:create']), rosterController.createRoster)
-  .get(rosterController.getRosters);
+router.route('/').post(auth(), rosterController.submitRoster).get(rosterController.getRosters);
 router.route('/:ownerId').get(rosterController.getRosterByOwner);
 
 // router

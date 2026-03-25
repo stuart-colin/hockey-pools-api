@@ -30,7 +30,27 @@ const deleteRoster = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const submitRoster = catchAsync(async (req, res) => {
+  // get the userData
+  const userInfo = req.userInfo;
+  const user = {
+    _id: userInfo.identities[0].user_id,
+    name: userInfo.user_metadata.name,
+    country: userInfo.user_metadata.country,
+    region: userInfo.user_metadata.region,
+  };
+  req.body.owner = user._id;
+
+  const roster = await rosterService.submitRoster(user, req.body);
+  if (!roster) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Unable to submit roster');
+  } else {
+    res.status(httpStatus.CREATED).send(roster);
+  }
+});
+
 module.exports = {
+  submitRoster,
   createRoster,
   getRosters,
   getRosterByOwner,

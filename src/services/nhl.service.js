@@ -5,6 +5,55 @@ const config = require('../config/config');
 // const draftPlayerService = require('../services/draftplayer.service');
 const { logger } = require('../config/logger');
 const ApiError = require('../utils/ApiError');
+const fs = require('fs').promises;
+const path = require('path');
+
+const REQUEST_TIMEOUT = 120000; // 2 minutes in milliseconds
+
+const getStandingsNow = async () => {
+  try {
+    const standings = await axios.get(`${config.nhl.statsApi}standings/now`, { timeout: REQUEST_TIMEOUT });
+    return standings.data;
+  } catch (error) {
+    logger.error(error);
+    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get standings');
+  }
+};
+
+const getScoresNow = async () => {
+  try {
+    const scores = await axios.get(`${config.nhl.statsApi}score/now`, { timeout: REQUEST_TIMEOUT });
+    console.log(scores);
+
+    return scores.data;
+  } catch (error) {
+    logger.error(error);
+    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get scores');
+  }
+};
+
+const getPlayerStats = async () => {
+  try {
+    const filePath = path.join(__dirname, 'playerstats.json');
+    const data = await fs.readFile(filePath, 'utf8');
+    const playerStatsData = JSON.parse(data);
+    return playerStatsData;
+  } catch (error) {
+    logger.error('Error reading or parsing playerstats.json:', error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unable to get player stats from file');
+  }
+};
+const getGoalieStats = async () => {
+  try {
+    const filePath = path.join(__dirname, 'goaliestats.json');
+    const data = await fs.readFile(filePath, 'utf8');
+    const goalieStatsData = JSON.parse(data);
+    return goalieStatsData;
+  } catch (error) {
+    logger.error('Error reading or parsing playerstats.json:', error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unable to get player stats from file');
+  }
+};
 
 /**
  * Query the NHL API for a player ID
@@ -91,14 +140,14 @@ const queryForPlayerStats = async (playerID, year) => {
                 wins: 0,
                 shutouts: 0,
                 otLosses: 0,
-              }
-            }
+              },
+            },
           },
           teamName,
           teamAbbrev,
           teamLogo,
-          otl: 0
-        }
+          otl: 0,
+        },
       };
     } else {
       return { stats: { featuredStats, teamName, teamAbbrev, teamLogo } };
@@ -110,6 +159,10 @@ const queryForPlayerStats = async (playerID, year) => {
 };
 
 module.exports = {
+  getStandingsNow,
+  getScoresNow,
+  getPlayerStats,
+  getGoalieStats,
   queryForPlayerStats,
   queryForPlayerID,
   queryForPlayerByID,

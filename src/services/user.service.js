@@ -8,11 +8,13 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
-  if (await User.isUserExist(userBody.name)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'User already exists');
+  console.log(userBody);
+  const exists = await User.findById(userBody.userId);
+  if (exists) {
+    return ApiError(httpStatus.BAD_REQUEST, 'User already exists');
+  } else {
+    return User.create(userBody);
   }
-
-  return User.create(userBody);
 };
 
 /**
@@ -35,7 +37,11 @@ const queryUsers = async (filter, options) => {
  * @returns {Promise<User>}
  */
 const getUserById = async (id) => {
-  return User.findById(id);
+  const user = await User.findById(id);
+  if (!user) {
+    return null;
+  }
+  return user;
 };
 
 /**
@@ -57,6 +63,14 @@ const updateUserById = async (userId, updateBody) => {
   return user;
 };
 
+const getUserByUserID = async (userId) => {
+  const user = await User.findOne({ userId: userId });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  return user;
+};
+
 /**
  * Delete user by id
  * @param {ObjectId} userId
@@ -73,6 +87,7 @@ const deleteUserById = async (userId) => {
 
 module.exports = {
   createUser,
+  getUserByUserID,
   queryUsers,
   getUserById,
   updateUserById,

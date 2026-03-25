@@ -2,6 +2,7 @@ const _ = require('lodash');
 const httpStatus = require('http-status');
 const { Roster, User, Player } = require('../models');
 const { playerService, nhlService } = require('../services');
+const userService = require('../services/user.service');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -10,6 +11,9 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Roster>}
  */
 const createRoster = async (rosterBody) => {
+  // console.log('Creating Roster');
+  // console.log(rosterBody);
+
   let roster = {
     center: [],
     left: [],
@@ -135,7 +139,7 @@ const getRosters = async (filter, options) => {
   // console.log(rosters.results);
   for (let i = 0; i < rosters.results.length; i++) {
     const roster = rosters.results[i];
-    console.log(roster);
+    // console.log(roster);
     // roster.center = await Promise.all(_.map(roster.center, playerService.getPlayerById));
     // roster.left = await Promise.all(_.map(roster.left, playerService.getPlayerById));
     // roster.right = await Promise.all(_.map(roster.right, playerService.getPlayerById));
@@ -211,7 +215,7 @@ const getRosterByOwner = async (owner) => {
  * @returns {Promise<User>}
  */
 const updateRosterById = async (ownerId, updateBody) => {
-  const owner = await User.getUserById(ownerId);
+  const owner = await userService.getUserById(ownerId);
   if (!owner) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
@@ -221,8 +225,9 @@ const updateRosterById = async (ownerId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Roster not found');
   }
 
-  Object.assign(roster, updateBody);
-  await roster.save();
+  // lets just recreate the roster
+  const deletedRoster = await deleteRosterByOwner(ownerId);
+  const newRoster = await createRoster(updateBody);
   return roster;
 };
 
@@ -232,11 +237,13 @@ const updateRosterById = async (ownerId, updateBody) => {
  * @returns {Promise<Roster>}
  */
 const deleteRosterByOwner = async (ownerId) => {
-  const roster = await hasRoster(ownerId);
+  const roster = await getRosterByOwner(ownerId);
+  // console.log(roster);
+
   if (!roster) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User does not have a roster');
   }
-  await roster.remove();
+  await Roster.deleteOne({ owner: ownerId });
   return roster;
 };
 
@@ -253,7 +260,32 @@ async function pullPlayerStats(player) {
   return await player;
 }
 
+const submitRoster = async (user, data) => {
+  // check to see if the user exists in the users table
+  let dbUser = await userService.getUserById(user._id);
+  if (!dbUser) {
+    // console.log('User does not exist. Creating user');
+    // create the user
+    dbUser = await userService.createUser(user);
+  }
+
+  // check to see if the user has a roster
+  let roster = await getRosterByOwner(dbUser._id);
+  if (!roster) {
+    // console.log('User does not have a roster. Creating roster');
+    // create the roster
+    roster = await createRoster(data);
+  } else {
+    // console.log('User has a roster. Updating roster');
+    // update the roster
+    roster = await updateRosterById(dbUser._id, data);
+  }
+
+  return roster;
+};
+
 module.exports = {
+  submitRoster,
   getRosters,
   createRoster,
   getRosterByOwner,
