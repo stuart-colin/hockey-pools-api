@@ -32,26 +32,51 @@ const getScoresNow = async () => {
   }
 };
 
+// const getPlayerStats = async () => {
+//   try {
+//     const filePath = path.join(__dirname, 'playerstats.json');
+//     const data = await fs.readFile(filePath, 'utf8');
+//     const playerStatsData = JSON.parse(data);
+//     return playerStatsData;
+//   } catch (error) {
+//     logger.error('Error reading or parsing playerstats.json:', error);
+//     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unable to get player stats from file');
+//   }
+// };
+// const getGoalieStats = async () => {
+//   try {
+//     const filePath = path.join(__dirname, 'goaliestats.json');
+//     const data = await fs.readFile(filePath, 'utf8');
+//     const goalieStatsData = JSON.parse(data);
+//     return goalieStatsData;
+//   } catch (error) {
+//     logger.error('Error reading or parsing playerstats.json:', error);
+//     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unable to get player stats from file');
+//   }
+// };
+
 const getPlayerStats = async () => {
   try {
-    const filePath = path.join(__dirname, 'playerstats.json');
-    const data = await fs.readFile(filePath, 'utf8');
-    const playerStatsData = JSON.parse(data);
-    return playerStatsData;
+    const scores = await axios.get(
+      `https://api.nhle.com/stats/rest/en/skater/summary?limit=-1&sort=points&gameType=2&cayenneExp=seasonId=20252026`,
+      { timeout: REQUEST_TIMEOUT }
+    );
+    return scores.data;
   } catch (error) {
-    logger.error('Error reading or parsing playerstats.json:', error);
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unable to get player stats from file');
+    logger.error(error);
+    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get scores');
   }
 };
 const getGoalieStats = async () => {
   try {
-    const filePath = path.join(__dirname, 'goaliestats.json');
-    const data = await fs.readFile(filePath, 'utf8');
-    const goalieStatsData = JSON.parse(data);
-    return goalieStatsData;
+    const scores = await axios.get(
+      `https://api.nhle.com/stats/rest/en/goalie/summary?limit=-1&sort=wins&gameType=2&cayenneExp=seasonId=20252026`,
+      { timeout: REQUEST_TIMEOUT }
+    );
+    return scores.data;
   } catch (error) {
-    logger.error('Error reading or parsing playerstats.json:', error);
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unable to get player stats from file');
+    logger.error(error);
+    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get scores');
   }
 };
 
