@@ -36,9 +36,12 @@ const submitRoster = catchAsync(async (req, res) => {
   const userInfo = req.userInfo;
 
   const user = {
-    auth0Id: decodedToken.sub, // Auth0 user ID from JWT
+    auth0Id: decodedToken.sub, // Full Auth0 sub for lookup/authentication
     name: userInfo.name || '', // Get name from /userinfo
   };
+
+  console.log('submitRoster - decodedToken.sub:', decodedToken.sub);
+  console.log('submitRoster - user object being passed:', user);
 
   const roster = await rosterService.submitRoster(user, req.body);
   if (!roster) {

@@ -125,6 +125,10 @@ const cachePlayerById = async (id) => {
   if (player.position === 'G') {
     const OTL = player.stats.otl;
     playerStats.stats.otl = OTL;
+    // if (_.has(playerStats, 'otl')) {
+    // } else {
+    //   playerStats.stats.otl = OTL;
+    // }
   }
   player.stats = playerStats.stats;
   await player.save();
@@ -153,7 +157,7 @@ const cachePlayers = async () => {
       results.push({ nhl_id: player.nhl_id, status: 'failed', error: error.message });
     }
   }
-  return { status: 'completed', results };
+  return { status: 'success' };
 };
 
 /**
