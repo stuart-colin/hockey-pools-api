@@ -125,12 +125,8 @@ const cachePlayerById = async (id) => {
   if (player.position === 'G') {
     const OTL = player.stats.otl;
     playerStats.stats.otl = OTL;
-    // if (_.has(playerStats, 'otl')) {
-    // } else {
-    //   playerStats.stats.otl = OTL;
-    // }
   }
-  Object.assign(player, playerStats);
+  player.stats = playerStats.stats;
   await player.save();
   return player;
 };
@@ -142,15 +138,22 @@ const cachePlayerById = async (id) => {
  */
 const cachePlayers = async () => {
   const players = await queryPlayers({}, { limit: 1000 });
+  const results = [];
   for (let i = 0; i < players.results.length; i++) {
     const player = players.results[i];
     if (!player) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Player not found');
+      continue;
     }
 
-    await cachePlayerById(player._id);
+    try {
+      await cachePlayerById(player._id);
+      results.push({ nhl_id: player.nhl_id, status: 'success' });
+    } catch (error) {
+      logger.warn(`Failed to cache player ${player.nhl_id}: ${error.message}`);
+      results.push({ nhl_id: player.nhl_id, status: 'failed', error: error.message });
+    }
   }
-  return { status: 'success' };
+  return { status: 'completed', results };
 };
 
 /**
