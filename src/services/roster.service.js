@@ -268,17 +268,17 @@ const submitRoster = async (user, data) => {
     dbUser = await userService.createUser(user);
   }
 
-  // Set the roster owner to the MongoDB _id (ObjectId)
-  data.owner = dbUser._id;
-
+  // Owner is already set by frontend (extracted ID from Auth0)
+  // Just use what was sent in the request body
+  
   // check to see if the user has a roster
-  let roster = await getRosterByOwner(dbUser._id);
+  let roster = await getRosterByOwner(data.owner);
   if (!roster) {
     // create the roster
     roster = await createRoster(data);
   } else {
     // update the roster
-    roster = await updateRosterById(dbUser._id, data);
+    roster = await updateRosterById(data.owner, data);
   }
 
   return roster;
