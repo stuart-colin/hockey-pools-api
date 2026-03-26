@@ -31,13 +31,13 @@ const deleteRoster = catchAsync(async (req, res) => {
 });
 
 const submitRoster = catchAsync(async (req, res) => {
-  // get the userData
+  // Extract user data from decoded JWT token
+  const decodedToken = req.user;
   const userInfo = req.userInfo;
+
   const user = {
-    _id: userInfo.identities[0].user_id,
-    name: userInfo.user_metadata.name,
-    country: userInfo.user_metadata.country,
-    region: userInfo.user_metadata.region,
+    _id: decodedToken.sub, // Use the 'sub' claim from the decoded JWT
+    name: userInfo.name || '', // Get name from /userinfo
   };
   req.body.owner = user._id;
 
