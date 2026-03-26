@@ -76,7 +76,21 @@ const createPlayerById = async (playerId) => {
     position: player.position,
     headshot: player.headshot,
   };
-  return Player.create(playerData);
+  const createdPlayer = await Player.create(playerData);
+  
+  // Auto-fetch and populate stats for newly created player
+  try {
+    const playerStats = await nhlService.queryForPlayerStats(player.playerId, '');
+    if (playerStats) {
+      Object.assign(createdPlayer, playerStats);
+      await createdPlayer.save();
+    }
+  } catch (error) {
+    logger.warn(`Could not auto-cache stats for player ${player.playerId}`, error);
+    // Don't fail player creation if stats fetching fails
+  }
+  
+  return createdPlayer;
 };
 
 /**
