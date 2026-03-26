@@ -8,18 +8,12 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
-  // Extract just the ID part if full sub was passed (e.g., "auth0|..." -> "...")
-  const auth0Id = userBody.auth0Id.includes('|') 
-    ? userBody.auth0Id.split('|').pop() 
-    : userBody.auth0Id;
-  
   // Check if user with this auth0Id already exists
-  const exists = await User.findOne({ auth0Id });
+  const exists = await User.findOne({ auth0Id: userBody.auth0Id });
   if (exists) {
     return exists;
   }
-  
-  return User.create({ ...userBody, auth0Id });
+  return User.create(userBody);
 };
 
 /**
