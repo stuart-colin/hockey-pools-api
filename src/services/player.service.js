@@ -4,7 +4,7 @@ const nhlService = require('./nhl.service');
 const { toJSON } = require('../models/plugins/');
 const { Player } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { transactionLogger } = require('../config/logger');
+const { transactionLogger, logger } = require('../config/logger');
 const { object } = require('joi');
 
 /**
@@ -77,19 +77,19 @@ const createPlayerById = async (playerId) => {
     headshot: player.headshot,
   };
   const createdPlayer = await Player.create(playerData);
-  
+
   // Auto-fetch and populate stats for newly created player
   try {
     const playerStats = await nhlService.queryForPlayerStats(player.playerId, '');
     if (playerStats) {
-      Object.assign(createdPlayer, playerStats);
+      createdPlayer.stats = playerStats.stats;
       await createdPlayer.save();
     }
   } catch (error) {
     logger.warn(`Could not auto-cache stats for player ${player.playerId}`, error);
     // Don't fail player creation if stats fetching fails
   }
-  
+
   return createdPlayer;
 };
 
