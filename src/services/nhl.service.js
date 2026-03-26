@@ -166,7 +166,7 @@ const queryForPlayerStats = async (playerID, year) => {
     const teamLogo = player.data.teamLogo;
     const season = player.data.featuredStats.season;
     const featuredStats = player.data.featuredStats;
-    if (season !== '20242025' && featuredStats.playoffs === undefined) {
+    if (season !== '20252026' && featuredStats.playoffs === undefined) {
       return {
         stats: {
           featuredStats: {

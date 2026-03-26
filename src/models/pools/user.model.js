@@ -41,7 +41,7 @@ userSchema.plugin(paginate);
  * @param {string} name - The user's name
  * @returns {Promise<boolean>}
  */
- userSchema.statics.isUserExist = async function (name) {
+userSchema.statics.isUserExist = async function (name) {
   const user = await this.findOne({ name });
   return !!user;
 };
@@ -51,7 +51,7 @@ userSchema.plugin(paginate);
  * @param {string} id - The user's id
  * @returns {Promise<boolean>}
  */
- userSchema.statics.isUserExistId = async function (id) {
+userSchema.statics.isUserExistId = async function (id) {
   const user = await this.findById(id);
   return !!user;
 };
