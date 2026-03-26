@@ -4,17 +4,16 @@ const ApiError = require('../utils/ApiError');
 
 /**
  * Create a user
- * @param {Object} userBody
+ * @param {Object} userBody - { auth0Id, name, country?, region? }
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
-  console.log(userBody);
-  const exists = await User.findById(userBody.userId);
+  // Check if user with this auth0Id already exists
+  const exists = await User.findOne({ auth0Id: userBody.auth0Id });
   if (exists) {
-    return ApiError(httpStatus.BAD_REQUEST, 'User already exists');
-  } else {
-    return User.create(userBody);
+    return exists;
   }
+  return User.create(userBody);
 };
 
 /**

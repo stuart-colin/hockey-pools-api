@@ -4,6 +4,11 @@ const { toJSON, paginate } = require('../plugins');
 
 const userSchema = mongoose.Schema(
   {
+    auth0Id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     name: {
       type: String,
       required: true,
@@ -11,12 +16,10 @@ const userSchema = mongoose.Schema(
     },
     region: {
       type: String,
-      required: true,
       trim: true,
     },
     country: {
       type: String,
-      required: true,
       trim: true,
     },
     roster: {

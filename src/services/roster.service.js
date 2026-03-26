@@ -261,22 +261,22 @@ async function pullPlayerStats(player) {
 }
 
 const submitRoster = async (user, data) => {
-  // check to see if the user exists in the users table
-  let dbUser = await userService.getUserById(user._id);
+  // check to see if the user exists in the users table by auth0Id
+  let dbUser = await User.findOne({ auth0Id: user.auth0Id });
   if (!dbUser) {
-    // console.log('User does not exist. Creating user');
-    // create the user
+    // User doesn't exist, create them
     dbUser = await userService.createUser(user);
   }
+
+  // Set the roster owner to the MongoDB _id (ObjectId)
+  data.owner = dbUser._id;
 
   // check to see if the user has a roster
   let roster = await getRosterByOwner(dbUser._id);
   if (!roster) {
-    // console.log('User does not have a roster. Creating roster');
     // create the roster
     roster = await createRoster(data);
   } else {
-    // console.log('User has a roster. Updating roster');
     // update the roster
     roster = await updateRosterById(dbUser._id, data);
   }
