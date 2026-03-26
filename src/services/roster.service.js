@@ -11,9 +11,6 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Roster>}
  */
 const createRoster = async (rosterBody) => {
-  // console.log('Creating Roster');
-  // console.log(rosterBody);
-
   let roster = {
     center: [],
     left: [],
@@ -31,11 +28,8 @@ const createRoster = async (rosterBody) => {
         const player = rosterBody.center[i];
         let createdPlayer;
         if (await Player.isPlayerExistID(player)) {
-          //create player
-          // console.log('Player Does Exist');
           createdPlayer = await playerService.getPlayerByNHLId(player);
         } else {
-          // console.log("Player Doesn't Exist");
           createdPlayer = await playerService.createPlayerById(player);
         }
         roster.center.push(createdPlayer._id);
@@ -46,11 +40,8 @@ const createRoster = async (rosterBody) => {
         const player = rosterBody.left[i];
         let createdPlayer;
         if (await Player.isPlayerExistID(player)) {
-          //create player
-          // console.log('Player Does Exist');
           createdPlayer = await playerService.getPlayerByNHLId(player);
         } else {
-          // console.log("Player Doesn't Exist");
           createdPlayer = await playerService.createPlayerById(player);
         }
         roster.left.push(createdPlayer._id);
@@ -61,11 +52,8 @@ const createRoster = async (rosterBody) => {
         const player = rosterBody.right[i];
         let createdPlayer;
         if (await Player.isPlayerExistID(player)) {
-          //create player
-          // console.log('Player Does Exist');
           createdPlayer = await playerService.getPlayerByNHLId(player);
         } else {
-          // console.log("Player Doesn't Exist");
           createdPlayer = await playerService.createPlayerById(player);
         }
         roster.right.push(createdPlayer._id);
@@ -76,11 +64,8 @@ const createRoster = async (rosterBody) => {
         const player = rosterBody.defense[i];
         let createdPlayer;
         if (await Player.isPlayerExistID(player)) {
-          //create player
-          // console.log('Player Does Exist');
           createdPlayer = await playerService.getPlayerByNHLId(player);
         } else {
-          // console.log("Player Doesn't Exist");
           createdPlayer = await playerService.createPlayerById(player);
         }
         roster.defense.push(createdPlayer._id);
@@ -91,11 +76,8 @@ const createRoster = async (rosterBody) => {
         const player = rosterBody.goalie[i];
         let createdPlayer;
         if (await Player.isPlayerExistID(player)) {
-          //create player
-          // console.log('Player Does Exist');
           createdPlayer = await playerService.getPlayerByNHLId(player);
         } else {
-          // console.log("Player Doesn't Exist");
           createdPlayer = await playerService.createPlayerById(player);
         }
         roster.goalie.push(createdPlayer._id);
@@ -106,11 +88,8 @@ const createRoster = async (rosterBody) => {
         const player = rosterBody.utility[i];
         let createdPlayer;
         if (await Player.isPlayerExistID(player)) {
-          //create player
-          // console.log('Player Does Exist');
           createdPlayer = await playerService.getPlayerByNHLId(player);
         } else {
-          // console.log("Player Doesn't Exist");
           createdPlayer = await playerService.createPlayerById(player);
         }
         roster.utility.push(createdPlayer._id);
@@ -120,7 +99,6 @@ const createRoster = async (rosterBody) => {
   }
 
   //TODO: Validate that the rosters are actually the right positions
-  // console.log(roster);
   return Roster.create(roster);
 };
 
@@ -136,10 +114,8 @@ const createRoster = async (rosterBody) => {
 const getRosters = async (filter, options) => {
   options.populate = 'left,right,center,defense,goalie,utility,owner';
   const rosters = await Roster.paginate(filter, options);
-  // console.log(rosters.results);
   for (let i = 0; i < rosters.results.length; i++) {
     const roster = rosters.results[i];
-    // console.log(roster);
     // roster.center = await Promise.all(_.map(roster.center, playerService.getPlayerById));
     // roster.left = await Promise.all(_.map(roster.left, playerService.getPlayerById));
     // roster.right = await Promise.all(_.map(roster.right, playerService.getPlayerById));
@@ -165,45 +141,6 @@ const getRosterByOwner = async (owner) => {
     .populate('utility')
     .populate('owner');
   let roster = await rosterRaw;
-  // for (let i = 0; i < roster.center.length; i++) {
-  //   const player = roster.center[i];
-  //   let stats = await nhlService.queryForPlayerStats(player.nhl_id);
-  //   player.stats = stats;
-  //   roster.center[i] = player;
-  // }
-
-  // for (let i = 0; i < roster.left.length; i++) {
-  //   const player = roster.left[i];
-  //   let stats = await nhlService.queryForPlayerStats(player.nhl_id);
-  //   player.stats = stats;
-  //   roster.left[i] = player;
-  // }
-
-  // for (let i = 0; i < roster.right.length; i++) {
-  //   const player = roster.right[i];
-  //   let stats = await nhlService.queryForPlayerStats(player.nhl_id);
-  //   player.stats = stats;
-  //   roster.right[i] = player;
-  // }
-
-  // for (let i = 0; i < roster.defense.length; i++) {
-  //   const player = roster.defense[i];
-  //   let stats = await nhlService.queryForPlayerStats(player.nhl_id);
-  //   player.stats = stats;
-  //   roster.defense[i] = player;
-  // }
-
-  // for (let i = 0; i < roster.goalie.length; i++) {
-  //   const player = roster.goalie[i];
-  //   let stats = await nhlService.queryForPlayerStats(player.nhl_id);
-  //   player.stats = stats;
-  //   roster.goalie[i] = player;
-  // }
-
-  // const utilplayer = roster.utility;
-  // let stats = await nhlService.queryForPlayerStats(utilplayer.nhl_id);
-  // utilplayer.stats = stats;
-  // roster.utility = utilplayer;
 
   return roster;
 };
@@ -238,7 +175,6 @@ const updateRosterById = async (ownerId, updateBody) => {
  */
 const deleteRosterByOwner = async (ownerId) => {
   const roster = await getRosterByOwner(ownerId);
-  // console.log(roster);
 
   if (!roster) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User does not have a roster');
@@ -249,14 +185,12 @@ const deleteRosterByOwner = async (ownerId) => {
 
 async function pullPlayerStats(player) {
   let playerStats = await nhlService.queryForPlayerStats(player.nhl_id, '');
-  // console.log(playerStats);
   if (player.stats !== undefined) {
     Object.assign(player.stats, playerStats.stats);
   } else {
     player.stats = playerStats.stats;
   }
   player.team = playerStats.team;
-  // console.log(player);
   return await player;
 }
 
@@ -270,7 +204,7 @@ const submitRoster = async (user, data) => {
 
   // Owner is already set by frontend (extracted ID from Auth0)
   // Just use what was sent in the request body
-  
+
   // check to see if the user has a roster
   let roster = await getRosterByOwner(data.owner);
   if (!roster) {

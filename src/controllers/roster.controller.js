@@ -36,18 +36,14 @@ const submitRoster = catchAsync(async (req, res) => {
   const userInfo = req.userInfo;
 
   // Extract just the ID part (e.g., "auth0|..." -> "...")
-  const auth0Id = decodedToken.sub.includes('|') 
-    ? decodedToken.sub.split('|').pop() 
+  const auth0Id = decodedToken.sub.includes('|')
+    ? decodedToken.sub.split('|').pop()
     : decodedToken.sub;
 
   const user = {
     auth0Id: auth0Id, // Just the ID part
     name: userInfo.name || '', // Get name from /userinfo
   };
-
-  console.log('submitRoster - decodedToken.sub:', decodedToken.sub);
-  console.log('submitRoster - extracted auth0Id:', auth0Id);
-  console.log('submitRoster - user object being passed:', user);
 
   const roster = await rosterService.submitRoster(user, req.body);
   if (!roster) {

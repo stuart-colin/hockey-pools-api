@@ -217,6 +217,9 @@ const updatePlayerOTL = async (playerId, otl) => {
     player.stats = {
       otl: otl,
     };
+  } else {
+    // Update existing stats with the new OTL value
+    player.stats.otl = otl;
   }
   await player.save();
   return player;

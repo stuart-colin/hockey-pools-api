@@ -23,7 +23,6 @@ const getStandingsNow = async () => {
 const getScoresNow = async () => {
   try {
     const scores = await axios.get(`${config.nhl.statsApi}score/now`, { timeout: REQUEST_TIMEOUT });
-    console.log(scores);
 
     return scores.data;
   } catch (error) {

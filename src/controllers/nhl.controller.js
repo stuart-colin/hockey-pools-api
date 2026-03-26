@@ -3,7 +3,6 @@ const catchAsync = require('../utils/catchAsync');
 const { nhlService } = require('../services');
 
 const queryForPlayerID = catchAsync(async (req, res) => {
-  //   console.log(req.body.name);
   const player = await nhlService.queryForPlayerID(req.body.name);
   res.status(httpStatus.OK).send(player);
 });
