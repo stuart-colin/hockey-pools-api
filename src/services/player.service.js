@@ -123,12 +123,9 @@ const cachePlayerById = async (id) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Player not found');
   }
   if (player.position === 'G') {
-    const OTL = player.stats.otl;
+    // Safely get the OTL value, default to 0 if not set
+    const OTL = player.stats?.otl || 0;
     playerStats.stats.otl = OTL;
-    // if (_.has(playerStats, 'otl')) {
-    // } else {
-    //   playerStats.stats.otl = OTL;
-    // }
   }
   player.stats = playerStats.stats;
   await player.save();
@@ -221,6 +218,8 @@ const updatePlayerOTL = async (playerId, otl) => {
     // Update existing stats with the new OTL value
     player.stats.otl = otl;
   }
+  // Mark the nested object as modified so Mongoose saves it
+  player.markModified('stats');
   await player.save();
   return player;
 };
