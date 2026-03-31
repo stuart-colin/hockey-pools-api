@@ -31,6 +31,16 @@ const getScoresNow = async () => {
   }
 };
 
+const getScoresByDate = async (date) => {
+  try {
+    const scores = await axios.get(`${config.nhl.statsApi}score/${date}`, { timeout: REQUEST_TIMEOUT });
+    return scores.data;
+  } catch (error) {
+    logger.error(error);
+    throw new ApiError(httpStatus.NOT_FOUND, `Unable to get scores for date ${date}`);
+  }
+};
+
 // const getPlayerStats = async () => {
 //   try {
 //     const filePath = path.join(__dirname, 'playerstats.json');
@@ -199,6 +209,7 @@ module.exports = {
   getTeams,
   getStandingsNow,
   getScoresNow,
+  getScoresByDate,
   getPlayerStats,
   getGoalieStats,
   queryForPlayerStats,
