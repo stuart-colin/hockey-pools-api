@@ -10,6 +10,16 @@ const path = require('path');
 
 const REQUEST_TIMEOUT = 120000; // 2 minutes in milliseconds
 
+const getBaseApi = async () => {
+  try {
+    const baseApi = await axios.get(config.nhl.statsApi, { timeout: REQUEST_TIMEOUT });
+    return baseApi.data;
+  } catch (error) {
+    logger.error(error);
+    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get base API');
+  }
+};
+
 const getStandingsNow = async () => {
   try {
     const standings = await axios.get(`${config.nhl.statsApi}standings/now`, { timeout: REQUEST_TIMEOUT });
@@ -74,43 +84,43 @@ const getStats = async (query) => {
   }
 };
 
-const getTeams = async () => {
-  try {
-    const teams = await axios.get(`https://api.nhle.com/stats/rest/en/team`,
-      { timeout: REQUEST_TIMEOUT }
-    );
-    return teams.data;
-  } catch (error) {
-    logger.error(error);
-    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get teams');
-  }
-};
+// const getTeams = async () => {
+//   try {
+//     const teams = await axios.get(`https://api.nhle.com/stats/rest/en/team`,
+//       { timeout: REQUEST_TIMEOUT }
+//     );
+//     return teams.data;
+//   } catch (error) {
+//     logger.error(error);
+//     throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get teams');
+//   }
+// };
 
 
-const getPlayerStats = async () => {
-  try {
-    const stats = await axios.get(
-      `https://api.nhle.com/stats/rest/en/skater/summary?limit=-1&sort=points&gameType=2&cayenneExp=seasonId=20252026`,
-      { timeout: REQUEST_TIMEOUT }
-    );
-    return stats.data;
-  } catch (error) {
-    logger.error(error);
-    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get player stats');
-  }
-};
-const getGoalieStats = async () => {
-  try {
-    const stats = await axios.get(
-      `https://api.nhle.com/stats/rest/en/goalie/summary?limit=-1&sort=wins&gameType=2&cayenneExp=seasonId=20252026`,
-      { timeout: REQUEST_TIMEOUT }
-    );
-    return stats.data;
-  } catch (error) {
-    logger.error(error);
-    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get goalie stats');
-  }
-};
+// const getPlayerStats = async () => {
+//   try {
+//     const stats = await axios.get(
+//       `https://api.nhle.com/stats/rest/en/skater/summary?limit=-1&sort=points&gameType=2&cayenneExp=seasonId=20252026`,
+//       { timeout: REQUEST_TIMEOUT }
+//     );
+//     return stats.data;
+//   } catch (error) {
+//     logger.error(error);
+//     throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get player stats');
+//   }
+// };
+// const getGoalieStats = async () => {
+//   try {
+//     const stats = await axios.get(
+//       `https://api.nhle.com/stats/rest/en/goalie/summary?limit=-1&sort=wins&gameType=2&cayenneExp=seasonId=20252026`,
+//       { timeout: REQUEST_TIMEOUT }
+//     );
+//     return stats.data;
+//   } catch (error) {
+//     logger.error(error);
+//     throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get goalie stats');
+//   }
+// };
 
 /**
  * Query the NHL API for a player ID
@@ -216,13 +226,14 @@ const queryForPlayerStats = async (playerID, year) => {
 };
 
 module.exports = {
-  getTeams,
+  // getTeams,
+  getBaseApi,
   getStandingsNow,
   getScoresNow,
   getScoresByDate,
   getStats,
-  getPlayerStats,
-  getGoalieStats,
+  // getPlayerStats,
+  // getGoalieStats,
   queryForPlayerStats,
   queryForPlayerID,
   queryForPlayerByID,

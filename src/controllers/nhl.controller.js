@@ -13,9 +13,14 @@ const queryForPlayerByID = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(player);
 });
 
-const getTeams = catchAsync(async (req, res) => {
-  const teams = await nhlService.getTeams();
-  res.status(httpStatus.OK).send(teams);
+// const getTeams = catchAsync(async (req, res) => {
+//   const teams = await nhlService.getTeams();
+//   res.status(httpStatus.OK).send(teams);
+// });
+
+const getBaseApi = catchAsync(async (req, res) => {
+  const baseApi = await nhlService.getBaseApi();
+  res.status(httpStatus.OK).send(baseApi);
 });
 
 const getScoresNow = catchAsync(async (req, res) => {
@@ -41,7 +46,6 @@ const getStandingsNow = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(standings);
 });
 
-
 const getStats = catchAsync(async (req, res) => {
   const queryPath = req.params[0];
   // Validate for directory traversal
@@ -55,23 +59,24 @@ const getStats = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(stats);
 });
 
-const getPlayerStats = catchAsync(async (req, res) => {
-  const stats = await nhlService.getPlayerStats();
-  res.status(httpStatus.OK).send(stats);
-});
+// const getPlayerStats = catchAsync(async (req, res) => {
+//   const stats = await nhlService.getPlayerStats();
+//   res.status(httpStatus.OK).send(stats);
+// });
 
-const getGoalieStats = catchAsync(async (req, res) => {
-  const stats = await nhlService.getGoalieStats();
-  res.status(httpStatus.OK).send(stats);
-});
+// const getGoalieStats = catchAsync(async (req, res) => {
+//   const stats = await nhlService.getGoalieStats();
+//   res.status(httpStatus.OK).send(stats);
+// });
 
 module.exports = {
-  getTeams,
+  // getTeams,
+  getBaseApi,
   getScoresNow,
   getScoresByDate,
   getStandingsNow,
-  getPlayerStats,
-  getGoalieStats,
+  // getPlayerStats,
+  // getGoalieStats,
   queryForPlayerID,
   queryForPlayerByID,
   getStats,
