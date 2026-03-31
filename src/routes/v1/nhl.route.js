@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.post('/queryForPlayerID', nhlController.queryForPlayerID);
 router.post('/queryForPlayerByID', nhlController.queryForPlayerByID);
+router.get('/stats/*', nhlController.getStats);
 router.get('/teams', nhlController.getTeams);
 router.get('/scores', nhlController.getScoresNow);
 router.get('/scores/:date', nhlController.getScoresByDate);
