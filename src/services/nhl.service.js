@@ -10,9 +10,9 @@ const path = require('path');
 
 const REQUEST_TIMEOUT = 120000; // 2 minutes in milliseconds
 
-const getBaseApi = async (query) => {
+const getWebApi = async (query) => {
   try {
-    const url = `${config.nhl.statsApi}${query}`;
+    const url = `${config.nhl.webApi}${query}`;
     const resp = await axios.get(url, { timeout: REQUEST_TIMEOUT });
     return resp.data;
   } catch (error) {
@@ -23,7 +23,7 @@ const getBaseApi = async (query) => {
 
 const getStandingsNow = async () => {
   try {
-    const standings = await axios.get(`${config.nhl.statsApi}standings/now`, { timeout: REQUEST_TIMEOUT });
+    const standings = await axios.get(`${config.nhl.webApi}standings/now`, { timeout: REQUEST_TIMEOUT });
     return standings.data;
   } catch (error) {
     logger.error(error);
@@ -33,7 +33,7 @@ const getStandingsNow = async () => {
 
 const getScoresNow = async () => {
   try {
-    const scores = await axios.get(`${config.nhl.statsApi}score/now`, { timeout: REQUEST_TIMEOUT });
+    const scores = await axios.get(`${config.nhl.webApi}score/now`, { timeout: REQUEST_TIMEOUT });
 
     return scores.data;
   } catch (error) {
@@ -44,7 +44,7 @@ const getScoresNow = async () => {
 
 const getScoresByDate = async (date) => {
   try {
-    const scores = await axios.get(`${config.nhl.statsApi}score/${date}`, { timeout: REQUEST_TIMEOUT });
+    const scores = await axios.get(`${config.nhl.webApi}score/${date}`, { timeout: REQUEST_TIMEOUT });
     return scores.data;
   } catch (error) {
     logger.error(error);
@@ -75,53 +75,25 @@ const getScoresByDate = async (date) => {
 //   }
 // };
 
+const getRestApi = async (query) => {
+  try {
+    const resp = await axios.get(`${config.nhl.restApi}${query}`, { timeout: REQUEST_TIMEOUT });
+    return resp.data;
+  } catch (error) {
+    logger.error(error);
+    throw new ApiError(httpStatus.NOT_FOUND, `Unable to proxy NHL REST API for query ${query}`);
+  }
+};
+
 const getStats = async (query) => {
   try {
-    const stats = await axios.get(`https://api.nhle.com/stats/rest/en/${query}`, { timeout: REQUEST_TIMEOUT });
+    const stats = await axios.get(`${config.nhl.restApi}stats/rest/en/${query}`, { timeout: REQUEST_TIMEOUT });
     return stats.data;
   } catch (error) {
     logger.error(error);
     throw new ApiError(httpStatus.NOT_FOUND, `Unable to get stats for query ${query}`);
   }
 };
-
-// const getTeams = async () => {
-//   try {
-//     const teams = await axios.get(`https://api.nhle.com/stats/rest/en/team`,
-//       { timeout: REQUEST_TIMEOUT }
-//     );
-//     return teams.data;
-//   } catch (error) {
-//     logger.error(error);
-//     throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get teams');
-//   }
-// };
-
-
-// const getPlayerStats = async () => {
-//   try {
-//     const stats = await axios.get(
-//       `https://api.nhle.com/stats/rest/en/skater/summary?limit=-1&sort=points&gameType=2&cayenneExp=seasonId=20252026`,
-//       { timeout: REQUEST_TIMEOUT }
-//     );
-//     return stats.data;
-//   } catch (error) {
-//     logger.error(error);
-//     throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get player stats');
-//   }
-// };
-// const getGoalieStats = async () => {
-//   try {
-//     const stats = await axios.get(
-//       `https://api.nhle.com/stats/rest/en/goalie/summary?limit=-1&sort=wins&gameType=2&cayenneExp=seasonId=20252026`,
-//       { timeout: REQUEST_TIMEOUT }
-//     );
-//     return stats.data;
-//   } catch (error) {
-//     logger.error(error);
-//     throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get goalie stats');
-//   }
-// };
 
 /**
  * Query the NHL API for a player ID
@@ -175,7 +147,7 @@ const queryForPlayerID = async (playerName) => {
  */
 const queryForPlayerByID = async (playerID) => {
   try {
-    const player = await axios.get(`${config.nhl.statsApi}player/${playerID}/landing`);
+    const player = await axios.get(`${config.nhl.webApi}player/${playerID}/landing`);
     return player.data;
   } catch (error) {
     logger.error(error);
@@ -190,7 +162,7 @@ const queryForPlayerByID = async (playerID) => {
  */
 const queryForPlayerStats = async (playerID, year) => {
   try {
-    const player = await axios.get(`${config.nhl.statsApi}player/${playerID}/landing`);
+    const player = await axios.get(`${config.nhl.webApi}player/${playerID}/landing`);
     const teamName = player.data.fullTeamName.default;
     const teamAbbrev = player.data.currentTeamAbbrev;
     const teamLogo = player.data.teamLogo;
@@ -228,7 +200,8 @@ const queryForPlayerStats = async (playerID, year) => {
 
 module.exports = {
   // getTeams,
-  getBaseApi,
+  getWebApi,
+  getRestApi,
   getStandingsNow,
   getScoresNow,
   getScoresByDate,

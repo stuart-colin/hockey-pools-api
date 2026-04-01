@@ -13,25 +13,6 @@ const queryForPlayerByID = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(player);
 });
 
-// const getTeams = catchAsync(async (req, res) => {
-//   const teams = await nhlService.getTeams();
-//   res.status(httpStatus.OK).send(teams);
-// });
-
-const getBaseApi = catchAsync(async (req, res) => {
-  const queryPath = req.params[0];
-  // Validate for directory traversal
-  if (!queryPath || queryPath.includes('..') || queryPath.includes('\\') || queryPath.startsWith('/')) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid NHL API path');
-  }
-  // Reconstruct query string
-  const queryString = req.url.split('?')[1] || '';
-  const fullQuery = queryString ? `${queryPath}?${queryString}` : queryPath;
-  const data = await nhlService.getBaseApi(fullQuery);
-  res.status(httpStatus.OK).send(data);
-});
-
-
 const getScoresNow = catchAsync(async (req, res) => {
   const scores = await nhlService.getScoresNow();
   res.status(httpStatus.OK).send(scores);
@@ -68,6 +49,32 @@ const getStats = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(stats);
 });
 
+const getWebApi = catchAsync(async (req, res) => {
+  const queryPath = req.params[0];
+  // Validate for directory traversal
+  if (!queryPath || queryPath.includes('..') || queryPath.includes('\\') || queryPath.startsWith('/')) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid NHL API path');
+  }
+  // Reconstruct query string
+  const queryString = req.url.split('?')[1] || '';
+  const fullQuery = queryString ? `${queryPath}?${queryString}` : queryPath;
+  const data = await nhlService.getWebApi(fullQuery);
+  res.status(httpStatus.OK).send(data);
+});
+
+const getRestApi = catchAsync(async (req, res) => {
+  const queryPath = req.params[0];
+  // Validate for directory traversal
+  if (!queryPath || queryPath.includes('..') || queryPath.includes('\\') || queryPath.startsWith('/')) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid NHL REST API path');
+  }
+  // Reconstruct query string
+  const queryString = req.url.split('?')[1] || '';
+  const fullQuery = queryString ? `${queryPath}?${queryString}` : queryPath;
+  const data = await nhlService.getRestApi(fullQuery);
+  res.status(httpStatus.OK).send(data);
+});
+
 // const getPlayerStats = catchAsync(async (req, res) => {
 //   const stats = await nhlService.getPlayerStats();
 //   res.status(httpStatus.OK).send(stats);
@@ -79,13 +86,11 @@ const getStats = catchAsync(async (req, res) => {
 // });
 
 module.exports = {
-  // getTeams,
-  getBaseApi,
+  getWebApi,
+  getRestApi,
   getScoresNow,
   getScoresByDate,
   getStandingsNow,
-  // getPlayerStats,
-  // getGoalieStats,
   queryForPlayerID,
   queryForPlayerByID,
   getStats,

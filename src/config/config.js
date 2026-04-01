@@ -30,7 +30,8 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description('username for email server'),
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
-    NHL_STATS_API: Joi.string().required().description('NHL Stats API endpoint'),
+    NHL_WEB_API: Joi.string().required().description('NHL Web API endpoint'),
+    NHL_REST_API: Joi.string().required().description('NHL REST API endpoint'),
     NHL_SUGGEST_API: Joi.string().required().description('NHL Suggest API endpoint'),
   })
   .unknown();
@@ -77,7 +78,8 @@ module.exports = {
     from: envVars.EMAIL_FROM,
   },
   nhl: {
-    statsApi: envVars.NHL_STATS_API,
+    webApi: envVars.NHL_WEB_API,
+    restApi: envVars.NHL_REST_API,
     suggestApi: envVars.NHL_SUGGEST_API,
   },
 };
