@@ -19,9 +19,18 @@ const queryForPlayerByID = catchAsync(async (req, res) => {
 // });
 
 const getBaseApi = catchAsync(async (req, res) => {
-  const baseApi = await nhlService.getBaseApi();
-  res.status(httpStatus.OK).send(baseApi);
+  const queryPath = req.params[0];
+  // Validate for directory traversal
+  if (!queryPath || queryPath.includes('..') || queryPath.includes('\\') || queryPath.startsWith('/')) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid NHL API path');
+  }
+  // Reconstruct query string
+  const queryString = req.url.split('?')[1] || '';
+  const fullQuery = queryString ? `${queryPath}?${queryString}` : queryPath;
+  const data = await nhlService.proxyNhlApi(fullQuery);
+  res.status(httpStatus.OK).send(data);
 });
+
 
 const getScoresNow = catchAsync(async (req, res) => {
   const scores = await nhlService.getScoresNow();

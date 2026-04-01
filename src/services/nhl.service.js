@@ -10,13 +10,14 @@ const path = require('path');
 
 const REQUEST_TIMEOUT = 120000; // 2 minutes in milliseconds
 
-const getBaseApi = async () => {
+const getBaseApi = async (query) => {
   try {
-    const baseApi = await axios.get(config.nhl.statsApi, { timeout: REQUEST_TIMEOUT });
-    return baseApi.data;
+    const url = `${config.nhl.statsApi}${query}`;
+    const resp = await axios.get(url, { timeout: REQUEST_TIMEOUT });
+    return resp.data;
   } catch (error) {
     logger.error(error);
-    throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get base API');
+    throw new ApiError(httpStatus.NOT_FOUND, `Unable to proxy NHL API for query ${query}`);
   }
 };
 
