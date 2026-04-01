@@ -27,7 +27,7 @@ const getBaseApi = catchAsync(async (req, res) => {
   // Reconstruct query string
   const queryString = req.url.split('?')[1] || '';
   const fullQuery = queryString ? `${queryPath}?${queryString}` : queryPath;
-  const data = await nhlService.proxyNhlApi(fullQuery);
+  const data = await nhlService.getBaseApi(fullQuery);
   res.status(httpStatus.OK).send(data);
 });
 
