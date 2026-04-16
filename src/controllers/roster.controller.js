@@ -40,9 +40,15 @@ const submitRoster = catchAsync(async (req, res) => {
     ? decodedToken.sub.split('|').pop()
     : decodedToken.sub;
 
+  // The frontend reads user_metadata from Auth0 Management API and sends it
+  // as `profile` in the body. Prefer that over /userinfo.name (which is the
+  // email for DB connection users without a profile name).
+  const profile = req.body && req.body.profile ? req.body.profile : {};
   const user = {
-    auth0Id: auth0Id, // Just the ID part
-    name: userInfo.name || '', // Get name from /userinfo
+    auth0Id,
+    name: profile.name || userInfo.name || '',
+    region: profile.region || '',
+    country: profile.country || '',
   };
 
   const roster = await rosterService.submitRoster(user, req.body);

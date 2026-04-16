@@ -200,6 +200,24 @@ const submitRoster = async (user, data) => {
   if (!dbUser) {
     // User doesn't exist, create them
     dbUser = await userService.createUser(user);
+  } else {
+    // Sync profile fields from Auth0 user_metadata when they differ. This
+    // also self-heals legacy rows whose `name` was stored as the user's
+    // email (because /userinfo.name fell back to email for DB connections).
+    const updates = {};
+    if (user.name && user.name !== dbUser.name) {
+      updates.name = user.name;
+    }
+    if (user.region && user.region !== dbUser.region) {
+      updates.region = user.region;
+    }
+    if (user.country && user.country !== dbUser.country) {
+      updates.country = user.country;
+    }
+    if (Object.keys(updates).length > 0) {
+      Object.assign(dbUser, updates);
+      await dbUser.save();
+    }
   }
 
   // Always trust the server-side User._id as the roster owner. The frontend
