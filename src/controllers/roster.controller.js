@@ -33,7 +33,7 @@ const deleteRoster = catchAsync(async (req, res) => {
 // Namespace used by the Auth0 post-login Action that injects user_metadata
 // as custom claims on the access token. Must match the namespace used in
 // the Action's setCustomClaim() calls.
-const PROFILE_CLAIMS_NAMESPACE = 'https://hockeypools.dev/';
+const PROFILE_CLAIMS_NAMESPACE = 'https://bps-annual-hockey-pool.netlify.app/';
 
 const submitRoster = catchAsync(async (req, res) => {
   // Extract user data from decoded JWT token
