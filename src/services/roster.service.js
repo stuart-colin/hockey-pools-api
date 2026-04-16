@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const mongoose = require('mongoose');
 const httpStatus = require('http-status');
 const { Roster, User, Player } = require('../models');
 const { playerService, nhlService } = require('../services');
@@ -127,12 +128,18 @@ const getRosters = async (filter, options) => {
 };
 
 /**
- * Get roster by owner ID
+ * Get roster by owner. The `owner` argument may be either:
+ *   - a User._id (Mongo ObjectId, what's stored on roster.owner today), or
+ *   - an Auth0 sub / auth0Id string (what the frontend sends from JWT).
+ *
+ * For legacy users User._id happens to equal their auth0Id so the first lookup
+ * works; for users created post-regression-fix the IDs diverge and we have to
+ * resolve via User.auth0Id.
  * @param {string} owner
  * @returns {Promise<Roster>}
  */
-const getRosterByOwner = async (owner) => {
-  let rosterRaw = Roster.findOne({ owner: owner })
+const findRosterByOwnerId = (ownerId) =>
+  Roster.findOne({ owner: ownerId })
     .populate('center')
     .populate('left')
     .populate('right')
@@ -140,9 +147,20 @@ const getRosterByOwner = async (owner) => {
     .populate('goalie')
     .populate('utility')
     .populate('owner');
-  let roster = await rosterRaw;
 
-  return roster;
+const getRosterByOwner = async (owner) => {
+  if (mongoose.Types.ObjectId.isValid(owner)) {
+    const roster = await findRosterByOwnerId(owner);
+    if (roster) {
+      return roster;
+    }
+  }
+
+  const user = await User.findOne({ auth0Id: String(owner) });
+  if (!user) {
+    return null;
+  }
+  return findRosterByOwnerId(user._id);
 };
 
 /**
