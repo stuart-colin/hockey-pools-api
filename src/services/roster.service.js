@@ -20,7 +20,7 @@ const createRoster = async (rosterBody) => {
     utility: [],
   };
   if (_.has(rosterBody, 'owner')) {
-    if (await !User.isUserExistId(rosterBody.owner)) {
+    if (!(await User.isUserExistId(rosterBody.owner))) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'User does not exist');
     } else {
       //CENTER
@@ -202,17 +202,20 @@ const submitRoster = async (user, data) => {
     dbUser = await userService.createUser(user);
   }
 
-  // Owner is already set by frontend (extracted ID from Auth0)
-  // Just use what was sent in the request body
+  // Always trust the server-side User._id as the roster owner. The frontend
+  // sends its best guess from the Auth0 sub, but that only happens to match
+  // User._id for legacy users; new users get a fresh Mongo ObjectId and would
+  // otherwise end up with owner references that don't populate.
+  data.owner = dbUser._id;
 
   // check to see if the user has a roster
-  let roster = await getRosterByOwner(data.owner);
+  let roster = await getRosterByOwner(dbUser._id);
   if (!roster) {
     // create the roster
     roster = await createRoster(data);
   } else {
     // update the roster
-    roster = await updateRosterById(data.owner, data);
+    roster = await updateRosterById(dbUser._id, data);
   }
 
   return roster;
