@@ -30,6 +30,11 @@ const deleteRoster = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+// Namespace used by the Auth0 post-login Action that injects user_metadata
+// as custom claims on the access token. Must match the namespace used in
+// the Action's setCustomClaim() calls.
+const PROFILE_CLAIMS_NAMESPACE = 'https://hockeypools.dev/';
+
 const submitRoster = catchAsync(async (req, res) => {
   // Extract user data from decoded JWT token
   const decodedToken = req.user;
@@ -40,15 +45,19 @@ const submitRoster = catchAsync(async (req, res) => {
     ? decodedToken.sub.split('|').pop()
     : decodedToken.sub;
 
-  // The frontend reads user_metadata from Auth0 Management API and sends it
-  // as `profile` in the body. Prefer that over /userinfo.name (which is the
-  // email for DB connection users without a profile name).
-  const profile = req.body && req.body.profile ? req.body.profile : {};
+  // Auth0 post-login Action copies user_metadata.{name,region,country} onto
+  // the access token as namespaced custom claims. /userinfo.name falls back
+  // to the email for DB-connection users, so the custom claim is strictly
+  // better when present.
+  const claimName = decodedToken[`${PROFILE_CLAIMS_NAMESPACE}name`];
+  const claimRegion = decodedToken[`${PROFILE_CLAIMS_NAMESPACE}region`];
+  const claimCountry = decodedToken[`${PROFILE_CLAIMS_NAMESPACE}country`];
+
   const user = {
     auth0Id,
-    name: profile.name || userInfo.name || '',
-    region: profile.region || '',
-    country: profile.country || '',
+    name: claimName || userInfo.name || '',
+    region: claimRegion || '',
+    country: claimCountry || '',
   };
 
   const roster = await rosterService.submitRoster(user, req.body);
