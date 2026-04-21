@@ -37,6 +37,7 @@ const PROFILE_BACKFILL = {
   'kennyvollet@yahoo.ca': { name: 'Kenny Vollet', country: 'Canada', region: 'AB' },
   'killianmcsweeney@gmail.com': { name: 'Killian McSweeney', country: 'Canada', region: 'BC' },
   'devonaubreystone@gmail.com': { name: 'Devon Stone', country: 'Canada', region: 'AB' },
+  'haugrud@ualberta.ca': { name: 'Kyle Haugrud', country: 'Canada', region: 'Alberta' },
 };
 
 const run = async () => {
