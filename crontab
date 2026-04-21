@@ -1,5 +1,4 @@
 # 16:00 UTC = 12:00 EDT. App only runs during NHL playoffs (Apr–Jun), which is
 # always in EDT, so this stays aligned with "noon Eastern" for the whole season.
-# TEMP: bumped to 16:10 UTC (12:10 EDT) for one-run verification. Revert to `0 16 * * *` after.
-10 16 * * * curl -fsS https://hockey-pools-api.fly.dev/v1/players/cache
+0 16 * * * curl -fsS https://hockey-pools-api.fly.dev/v1/players/cache
 

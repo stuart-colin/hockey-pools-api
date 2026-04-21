@@ -10,6 +10,52 @@ const path = require('path');
 
 const REQUEST_TIMEOUT = 120000; // 2 minutes in milliseconds
 
+// Transient error codes worth retrying. Everything else (401, 404, 429, etc.)
+// surfaces immediately so we don't mask real problems.
+const TRANSIENT_ERRORS = new Set([
+  'ECONNRESET',
+  'ECONNABORTED',
+  'ETIMEDOUT',
+  'EPIPE',
+  'EAI_AGAIN',
+  'ENOTFOUND',
+]);
+
+const isTransientAxiosError = (error) => {
+  if (!error) return false;
+  if (error.code && TRANSIENT_ERRORS.has(error.code)) return true;
+  // 'socket hang up' is a Node HTTP error without a .code in some versions.
+  if (typeof error.message === 'string' && error.message.toLowerCase().includes('socket hang up')) return true;
+  // 5xx responses are also worth retrying once or twice.
+  const status = error.response && error.response.status;
+  if (status && status >= 500 && status < 600) return true;
+  return false;
+};
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Fetch a URL via axios with a small retry loop for transient failures.
+ * Non-transient errors throw immediately.
+ */
+const axiosGetWithRetry = async (url, { retries = 2, baseDelayMs = 500, ...axiosOptions } = {}) => {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await axios.get(url, { timeout: REQUEST_TIMEOUT, ...axiosOptions });
+    } catch (error) {
+      lastError = error;
+      if (attempt === retries || !isTransientAxiosError(error)) {
+        throw error;
+      }
+      const delay = baseDelayMs * Math.pow(2, attempt);
+      logger.warn(`Transient error on ${url} (attempt ${attempt + 1}/${retries + 1}): ${error.message}. Retrying in ${delay}ms...`);
+      await sleep(delay);
+    }
+  }
+  throw lastError;
+};
+
 const getWebApi = async (query) => {
   try {
     const url = `${config.nhl.webApi}${query}`;
@@ -162,7 +208,7 @@ const queryForPlayerByID = async (playerID) => {
  */
 const queryForPlayerStats = async (playerID, year) => {
   try {
-    const player = await axios.get(`${config.nhl.webApi}player/${playerID}/landing`);
+    const player = await axiosGetWithRetry(`${config.nhl.webApi}player/${playerID}/landing`);
 
     // NHL's landing endpoint can legitimately omit these fields for players
     // without an active NHL roster spot (waived, AHL assignment, long-term IR,
