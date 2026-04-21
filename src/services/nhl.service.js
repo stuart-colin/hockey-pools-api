@@ -163,35 +163,56 @@ const queryForPlayerByID = async (playerID) => {
 const queryForPlayerStats = async (playerID, year) => {
   try {
     const player = await axios.get(`${config.nhl.webApi}player/${playerID}/landing`);
-    const teamName = player.data.fullTeamName.default;
-    const teamAbbrev = player.data.currentTeamAbbrev;
-    const teamLogo = player.data.teamLogo;
-    const season = player.data.featuredStats.season;
-    const featuredStats = player.data.featuredStats;
-    if (season !== '20252026' && featuredStats.playoffs === undefined) {
+
+    // NHL's landing endpoint can legitimately omit these fields for players
+    // without an active NHL roster spot (waived, AHL assignment, long-term IR,
+    // unsigned, retired mid-season). We keep them in the DB anyway so their
+    // prior stats persist, just fall back to empty values.
+    const teamName = player.data.fullTeamName?.default || '';
+    const teamAbbrev = player.data.currentTeamAbbrev || '';
+    const teamLogo = player.data.teamLogo || '';
+    const featuredStats = player.data.featuredStats || null;
+    const season = featuredStats?.season || '';
+
+    // Empty playoffs placeholder used whenever the NHL hasn't populated
+    // playoff featured stats yet (pre-playoffs, or player had no featuredStats
+    // at all).
+    const emptyPlayoffs = {
+      subSeason: {
+        goals: 0,
+        assists: 0,
+        otGoals: 0,
+        wins: 0,
+        shutouts: 0,
+        otLosses: 0,
+      },
+    };
+
+    if (!featuredStats) {
       return {
         stats: {
-          featuredStats: {
-            playoffs: {
-              subSeason: {
-                goals: 0,
-                assists: 0,
-                otGoals: 0,
-                wins: 0,
-                shutouts: 0,
-                otLosses: 0,
-              },
-            },
-          },
+          featuredStats: { playoffs: emptyPlayoffs },
           teamName,
           teamAbbrev,
           teamLogo,
           otl: 0,
         },
       };
-    } else {
-      return { stats: { featuredStats, teamName, teamAbbrev, teamLogo } };
     }
+
+    if (season !== '20252026' && featuredStats.playoffs === undefined) {
+      return {
+        stats: {
+          featuredStats: { playoffs: emptyPlayoffs },
+          teamName,
+          teamAbbrev,
+          teamLogo,
+          otl: 0,
+        },
+      };
+    }
+
+    return { stats: { featuredStats, teamName, teamAbbrev, teamLogo } };
   } catch (error) {
     logger.error(error);
     throw new ApiError(httpStatus.NOT_FOUND, 'Unable to get player stats');

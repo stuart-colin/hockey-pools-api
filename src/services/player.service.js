@@ -187,7 +187,14 @@ const cachePlayers = async () => {
       results.push({ nhl_id: player.nhl_id, status: 'failed', error: error.message });
     }
   }
-  return { status: 'success' };
+
+  const succeeded = results.filter((r) => r.status === 'success').length;
+  const failed = results.filter((r) => r.status === 'failed');
+  logger.info(`cachePlayers complete: ${succeeded} succeeded, ${failed.length} failed (of ${results.length} players).`);
+  if (failed.length > 0) {
+    logger.info(`Failed nhl_ids: ${failed.map((r) => r.nhl_id).join(', ')}`);
+  }
+  return { status: 'success', succeeded, failed: failed.length, failedIds: failed.map((r) => r.nhl_id) };
 };
 
 /**
