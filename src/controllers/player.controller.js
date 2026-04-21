@@ -2,7 +2,7 @@ const _ = require('lodash');
 const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const catchAsync = require('../utils/catchAsync');
-const { playerService } = require('../services');
+const { playerService, playoffOtlService } = require('../services');
 const ApiError = require('../utils/ApiError');
 
 const getPlayers = catchAsync(async (req, res) => {
@@ -39,6 +39,13 @@ const cachePlayers = catchAsync(async (req, res) => {
   res.send(players);
 });
 
+const getPlayoffOtlTally = catchAsync(async (req, res) => {
+  // Optional overrides useful for dry-running a specific window.
+  const { startDate, endDate } = pick(req.query, ['startDate', 'endDate']);
+  const snapshot = await playoffOtlService.getPlayoffOtlSnapshot(startDate, endDate);
+  res.send(snapshot);
+});
+
 const updatePlayer = catchAsync(async (req, res) => {
   const player = await playerService.updatePlayerById(req.params.playerId, req.body);
   res.send(player);
@@ -68,4 +75,5 @@ module.exports = {
   deletePlayer,
   cachePlayer,
   cachePlayers,
+  getPlayoffOtlTally,
 };

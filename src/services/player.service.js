@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const httpStatus = require('http-status');
 const nhlService = require('./nhl.service');
+const playoffOtlService = require('./playoffOtl.service');
+const config = require('../config/config');
 const { toJSON } = require('../models/plugins/');
 const { Player } = require('../models');
 const ApiError = require('../utils/ApiError');
@@ -111,21 +113,36 @@ const getPlayerById = async (id) => {
 };
 
 /**
- * Get player by id
+ * Cache a single player's stats from the NHL API.
+ *
+ * For goalies, OTL is handled specially because the NHL does not track playoff
+ * OT losses. When an `otlTally` is passed in (from the daily cachePlayers run),
+ * we overwrite `stats.otl` with the tallied value. When called ad-hoc (e.g.
+ * cache a single player via the /cache/:playerId route) no tally is provided,
+ * so we preserve the last known stored value and let the next daily run correct
+ * it.
+ *
  * @param {ObjectId} id
+ * @param {Map<number, number>} [otlTally] - optional Map<nhl_id, otlCount>
  * @returns {Promise<Player>}
  */
-const cachePlayerById = async (id) => {
+const cachePlayerById = async (id, otlTally) => {
   const player = await getPlayerById(id);
-  console.log(player);
   const playerStats = await nhlService.queryForPlayerStats(player.nhl_id, '');
   if (!player) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Player not found');
   }
   if (player.position === 'G') {
-    // Safely get the OTL value, default to 0 if not set
-    const OTL = player.stats?.otl || 0;
-    playerStats.stats.otl = OTL;
+    const storedOtl = player.stats?.otl || 0;
+    if (otlTally) {
+      const tallyOtl = otlTally.get(player.nhl_id) || 0;
+      playerStats.stats.otl = tallyOtl;
+      if (tallyOtl !== storedOtl) {
+        logger.info(`OTL change for ${player.name} (${player.nhl_id}): ${storedOtl} -> ${tallyOtl}`);
+      }
+    } else {
+      playerStats.stats.otl = storedOtl;
+    }
   }
   player.stats = playerStats.stats;
   await player.save();
@@ -133,12 +150,28 @@ const cachePlayerById = async (id) => {
 };
 
 /**
- * Get player by id
- * @param {ObjectId} id
- * @returns {Promise<Player>}
+ * Cache every player. Builds a playoff OTL tally once per run (if a playoff
+ * start date is configured) and passes it to each goalie's cache step so we
+ * don't recompute it N times or risk different goalies seeing different tallies
+ * mid-run.
  */
 const cachePlayers = async () => {
   const players = await queryPlayers({}, { limit: 1000 });
+
+  // Compute once per run, not per player.
+  let otlTally = null;
+  if (config.playoffs.startDate) {
+    try {
+      const { tally, games } = await playoffOtlService.getPlayoffOtlTallies();
+      otlTally = tally;
+      logger.info(`Computed playoff OTL tally: ${tally.size} goalies across ${games.length} OT games.`);
+    } catch (error) {
+      logger.warn(`Failed to compute playoff OTL tally; falling back to stored OTL: ${error.message}`);
+    }
+  } else {
+    logger.warn('PLAYOFFS_START_DATE not configured; goalie OTL will be preserved from stored value.');
+  }
+
   const results = [];
   for (let i = 0; i < players.results.length; i++) {
     const player = players.results[i];
@@ -147,7 +180,7 @@ const cachePlayers = async () => {
     }
 
     try {
-      await cachePlayerById(player._id);
+      await cachePlayerById(player._id, otlTally);
       results.push({ nhl_id: player.nhl_id, status: 'success' });
     } catch (error) {
       logger.warn(`Failed to cache player ${player.nhl_id}: ${error.message}`);

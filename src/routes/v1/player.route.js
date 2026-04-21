@@ -6,6 +6,7 @@ const router = express.Router();
 router.route('/').get(playerController.getPlayers).post(playerController.createPlayer);
 
 router.route('/cache').get(playerController.cachePlayers);
+router.route('/otl-tally').get(playerController.getPlayoffOtlTally);
 router
   .route('/:playerId')
   .get(playerController.getPlayer)

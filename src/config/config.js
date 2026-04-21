@@ -33,6 +33,9 @@ const envVarsSchema = Joi.object()
     NHL_WEB_API: Joi.string().required().description('NHL Web API endpoint'),
     NHL_REST_API: Joi.string().required().description('NHL REST API endpoint'),
     NHL_SUGGEST_API: Joi.string().required().description('NHL Suggest API endpoint'),
+    PLAYOFFS_START_DATE: Joi.string()
+      .pattern(/^\d{4}-\d{2}-\d{2}$/)
+      .description('YYYY-MM-DD date the current Stanley Cup Playoffs begin; used for automated playoff OTL tallying.'),
   })
   .unknown();
 
@@ -81,5 +84,8 @@ module.exports = {
     webApi: envVars.NHL_WEB_API,
     restApi: envVars.NHL_REST_API,
     suggestApi: envVars.NHL_SUGGEST_API,
+  },
+  playoffs: {
+    startDate: envVars.PLAYOFFS_START_DATE,
   },
 };
