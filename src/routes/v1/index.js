@@ -3,6 +3,7 @@ const docsRoute = require('./docs.route');
 const nhlRoute = require('./nhl.route');
 const playerRoute = require('./player.route');
 const rosterRoute = require('./roster.route');
+const snapshotRoute = require('./snapshot.route');
 const userRoute = require('./user.route');
 const config = require('../../config/config');
 
@@ -24,6 +25,10 @@ const defaultRoutes = [
   {
     path: '/rosters',
     route: rosterRoute,
+  },
+  {
+    path: '/snapshots',
+    route: snapshotRoute,
   },
 ];
 
