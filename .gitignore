@@ -17,3 +17,6 @@ coverage
 # Local logs
 logs
 NHLPoolsAPI.code-workspace
+
+# Local one-off operational scripts (not part of deployment)
+scripts
