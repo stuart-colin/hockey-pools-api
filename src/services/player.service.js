@@ -2,6 +2,7 @@ const _ = require('lodash');
 const httpStatus = require('http-status');
 const nhlService = require('./nhl.service');
 const playoffOtlService = require('./playoffOtl.service');
+const snapshotService = require('./snapshot.service');
 const config = require('../config/config');
 const { toJSON } = require('../models/plugins/');
 const { Player } = require('../models');
@@ -194,6 +195,16 @@ const cachePlayers = async () => {
   if (failed.length > 0) {
     logger.info(`Failed nhl_ids: ${failed.map((r) => r.nhl_id).join(', ')}`);
   }
+
+  // Side-effect: write today's roster snapshot for the History page. Wrapped
+  // in try/catch so a snapshot failure can never fail the player refresh
+  // (which the daily cron depends on). Response shape is preserved.
+  try {
+    await snapshotService.runDailySnapshot();
+  } catch (error) {
+    logger.warn(`Daily roster snapshot failed (cache job continuing): ${error.message}`);
+  }
+
   return { status: 'success', succeeded, failed: failed.length, failedIds: failed.map((r) => r.nhl_id) };
 };
 
